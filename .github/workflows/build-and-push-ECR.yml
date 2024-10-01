@@ -26,10 +26,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/YOUR_ROLE_NAME
-          aws-region: ${{ inputs.aws_region }}
+        uses: aws-actions/configure-aws-credentials@
 
       - name: Login to Amazon ECR
         id: login-ecr
