@@ -1,0 +1,51 @@
+name: Reusable Build and Push to ECR
+
+on:
+  workflow_call:
+    inputs:
+      caller_repo:
+        required: true
+        type: string
+      aws_region:
+        required: true
+        type: string
+      ecr_repository:
+        required: true
+        type: string
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/YOUR_ROLE_NAME
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build Docker image
+        run: |
+          IMAGE_TAG=${{ inputs.caller_repo }}
+          docker build -t ${{ inputs.ecr_repository }}:$IMAGE_TAG .
+
+      - name: Push Docker image to ECR
+        run: |
+          IMAGE_TAG=${{ inputs.caller_repo }}
+          docker tag ${{ inputs.ecr_repository }}:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr_repository }}:$IMAGE_TAG
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr_repository }}:$IMAGE_TAG
+
+      - name: Print caller repository URL
+        run: |
+          echo "Caller Repository URL: ${{ inputs.caller_repo }}"
