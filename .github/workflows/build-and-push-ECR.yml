@@ -6,9 +6,9 @@ on:
       caller_repo:
         required: true
         type: string
-      aws_region:
-        required: true
-        type: string
+      # aws_region:
+      #   required: true
+      #   type: string
       ecr_repository:
         required: true
         type: string
