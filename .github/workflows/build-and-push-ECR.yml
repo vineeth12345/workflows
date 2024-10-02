@@ -6,9 +6,9 @@ on:
       caller_repo:
         required: true
         type: string
-      # aws_region:
-      #   required: true
-      #   type: string
+      aws_region:
+        required: true
+        type: string
       ecr_repository:
         required: true
         type: string
@@ -19,25 +19,19 @@ jobs:
 
     permissions:
       contents: read
-      id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          audience: sts.amazonaws.com
-          role-to-assume: arn:aws:iam::790862075478:role/githubactionsrole
-          aws-region: us-east-1
-
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v4
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: us-east-1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set region ${{ inputs.aws_region }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -45,15 +39,14 @@ jobs:
 
       - name: Build Docker image
         run: |
-          IMAGE_TAG=${{ inputs.caller_repo }}
-          docker build -t ${{ inputs.ecr_repository }} .
-        #  docker build -t ${{ inputs.ecr_repository }}:$IMAGE_TAG .
+          IMAGE_TAG=${{ inputs.caller_repo }}-${{ github.sha }}
+          docker build -t ${{ inputs.ecr_repository }}:$IMAGE_TAG .
 
-      # - name: Push Docker image to ECR
-      #   run: |
-      #     IMAGE_TAG=${{ inputs.caller_repo }}
-      #     docker tag ${{ inputs.ecr_repository }}:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr_repository }}:$IMAGE_TAG
-      #     docker push ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr_repository }}:$IMAGE_TAG
+      - name: Push Docker image to ECR
+        run: |
+          IMAGE_TAG=${{ inputs.caller_repo }}-${{ github.sha }}
+          docker tag ${{ inputs.ecr_repository }}:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr_repository }}:$IMAGE_TAG
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr_repository }}:$IMAGE_TAG
 
       - name: Print caller repository URL
         run: |
