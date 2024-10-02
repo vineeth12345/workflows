@@ -19,7 +19,7 @@ jobs:
 
     permissions:
       contents: read
-      # id-token: write
+      id-token: none #write
 
     steps:
       - name: Checkout repository
