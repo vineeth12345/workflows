@@ -1,0 +1,2 @@
+fail_on_severity: "high"
+comment-summary-in-pr: "always"
