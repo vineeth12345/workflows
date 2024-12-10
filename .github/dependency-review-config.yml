@@ -1,2 +1,13 @@
 fail_on_severity: "high"
 comment-summary-in-pr: "always"
+
+scanning-rules:
+  # Scan dependencies for known vulnerabilities
+  vulnerability-scan:
+    enabled: true
+    severity-threshold: moderate
+
+pr-comments:
+  enabled: true
+  include-summary: true
+  include-details: true
