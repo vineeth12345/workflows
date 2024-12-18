@@ -1,4 +1,4 @@
-name: Perform PBK-NextJS Container operation
+name: searchdl Container operation
 on:
   workflow_call:
     inputs:
