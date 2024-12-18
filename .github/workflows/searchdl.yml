@@ -1,0 +1,49 @@
+name: Perform PBK-NextJS Container operation
+on:
+  workflow_call:
+    inputs:
+      operation:
+        description: "The operation to perform (e.g.: synth, deploy)"
+        required: true
+        type: string
+      environment-type:
+        description: "The type of the environment (e.g.: DEV, PROD)."
+        required: true
+        type: string
+      instance-name:
+        description: "The name of this instance of the environment if this is an additional instance."
+        default: ""
+        type: string
+      environment-name:
+        description: "The name of the github environment to which the container is being deployed."
+        default: ""
+        type: string
+
+jobs:
+  validate-inputs:
+    name: Validate inputs
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Validate inputs
+        run: |
+          set -e
+          if [ -n "${{ inputs.environment-name }}" ] && [ "${{ inputs.operation }}" != "deploy" ]; then
+            >&2 echo "Environment name can only be specified for 'deploy' operations."
+            exit 1
+          fi
+          if [ -z "${{ inputs.environment-name }}" ] && [ "${{ inputs.operation }}" = "deploy" ]; then
+            >&2 echo "Environment name MUST be specified for 'deploy' operations."
+            exit 1
+          fi
+
+  echo-input-vars:
+    needs: validate-inputs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Echo all input variables
+        run: |
+          echo "Environment name: ${{ inputs.environment-name }}"
+          echo "Instance name: ${{ inputs.instance-name }}"
+          echo "Environment type: ${{ inputs.environment-type }}"
+          echo "Operation: ${{ inputs.operation }}"
