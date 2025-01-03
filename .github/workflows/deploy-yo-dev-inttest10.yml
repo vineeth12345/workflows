@@ -1,4 +1,4 @@
-name: Deploy Search-Application+searchdl -->testing
+name: Deploy Search-Application+searchdl
 
 on:
   workflow_dispatch: # Allows manual runs
